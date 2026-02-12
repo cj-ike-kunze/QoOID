@@ -899,8 +899,10 @@ one-way measurements, the same direction (uplink or downlink).
 ### Latency Component
 The latency-based QoO score is computed as follows:
 
-QoO_latency = min_{i}(min(max((1 - ((ML_i - ROP_i) / (CPUP_i - ROP_i))) * 100,
-0), 100))
+
+~~~ math
+\mathrm{QoO}_{\text{latency}} = \min_{i} \left( \min\left( \max\left( \left[ 1 - \frac{\mathrm{ML}_i - \mathrm{ROP}_i}{\mathrm{CPUP}_i - \mathrm{ROP}_i} \right] \times 100,\, 0 \right),\, 100 \right) \right)
+~~~
 
 Where:
 
@@ -915,8 +917,10 @@ percentile. The packet loss score is calculated using a similar interpolation
 formula, but based on the total measured packet loss (MLoss) and the packet loss
 thresholds defined in the ROP and CPUP:
 
-QoO_loss = min(max((1 - ((MLoss - ROP_Loss) / (CPUP_Loss - ROP_Loss))) * 100,
-0), 100)
+
+~~~ math
+\mathrm{QoO}_{\text{loss}} = \min\left( \max\left( \left[ 1 - \frac{\mathrm{MLoss} - \mathrm{ROP}_{\text{Loss}}}{\mathrm{CPUP}_{\text{Loss}} - \mathrm{ROP}_{\text{Loss}}} \right] \times 100,\, 0 \right),\, 100 \right)
+~~~
 
 Where:
 
@@ -928,7 +932,10 @@ Where:
 ### Overall QoO Calculation
 The overall QoO score is the minimum of the latency and packet loss scores:
 
-QoO = min(QoO_latency, QoO_loss)
+
+~~~ math
+\mathrm{QoO} = \min\left( \mathrm{QoO}_{\text{latency}},\, \mathrm{QoO}_{\text{loss}} \right)
+~~~
 
 
 ## Example
@@ -942,12 +949,21 @@ Example requirements and measured data:
 - Measured Packet Loss: 2%
 - Measured Minimum Bandwidth: 32Mbps / 28Mbps
 
-QoO_latency = min(min(max((1 - (350ms - 200ms) / (500ms - 200ms)) * 100, 0), 100), min(max((1 - (375ms - 300ms) / (600ms - 300ms)) * 100, 0), 100)) = min(50.00, 75.00) = 50.00
 
-QoO_loss = min(max((1 - (2% - 1%) / (5% - 1%))
-* 100, 0), 100) = 75.00
+~~~ math
+\mathrm{QoO}_{\text{latency}} = \min\left( \min\left( \max\left( \left[ 1 - \frac{350 - 200}{500 - 200} \right] \times 100,\, 0 \right),\, 100 \right),\, \min\left( \max\left( \left[ 1 - \frac{375 - 300}{600 - 300} \right] \times 100,\, 0 \right),\, 100 \right) \right) = \min(50.00, 75.00) = 50.00
+~~~
 
-QoO = min(QoO_latency, QoO_loss) = min(50.00, 75.00) = 50.00
+
+
+~~~ math
+\mathrm{QoO}_{\text{loss}} = \min\left( \max\left( \left[ 1 - \frac{2\% - 1\%}{5\% - 1\%} \right] \times 100,\, 0 \right),\, 100 \right) = 75.00
+~~~
+
+
+~~~ math
+\mathrm{QoO} = \min\left( \mathrm{QoO}_{\text{latency}},\, \mathrm{QoO}_{\text{loss}} \right) = \min(50.00, 75.00) = 50.00
+~~~
 
 In this example, the network scores 50% on the QoO assessment range between unacceptable and optimal for the given application
 when using the measured network and considering both latency and packet loss.
