@@ -899,8 +899,13 @@ one-way measurements, the same direction (uplink or downlink).
 ### Latency Component
 The latency-based QoO score is computed as follows:
 
-QoO_latency = min_{i}(min(max((1 - ((ML_i - ROP_i) / (CPUP_i - ROP_i))) * 100,
-0), 100))
+
+~~~
+for i in ROP:
+  m = (ML[i] - ROP[i]) / (CPUP[i] - ROP[i])
+  metrics[i] = clamp(0, m, 1)
+QoO_latency = find_min(metrics) * 100
+~~~
 
 Where:
 
@@ -915,8 +920,11 @@ percentile. The packet loss score is calculated using a similar interpolation
 formula, but based on the total measured packet loss (MLoss) and the packet loss
 thresholds defined in the ROP and CPUP:
 
-QoO_loss = min(max((1 - ((MLoss - ROP_Loss) / (CPUP_Loss - ROP_Loss))) * 100,
-0), 100)
+
+~~~
+m = (MLoss - ROP_Loss) / (CPUP_Loss - ROP_Loss)
+QoO_loss = clamp(0, m, 1) * 100
+~~~
 
 Where:
 
@@ -928,8 +936,10 @@ Where:
 ### Overall QoO Calculation
 The overall QoO score is the minimum of the latency and packet loss scores:
 
-QoO = min(QoO_latency, QoO_loss)
 
+~~~
+QoO = min(QoO_latency, QoO_loss)
+~~~
 
 ## Example
 The following example illustrates the QoO calculations.
@@ -942,12 +952,29 @@ Example requirements and measured data:
 - Measured Packet Loss: 2%
 - Measured Minimum Bandwidth: 32Mbps / 28Mbps
 
-QoO_latency = min(min(max((1 - (350ms - 200ms) / (500ms - 200ms)) * 100, 0), 100), min(max((1 - (375ms - 300ms) / (600ms - 300ms)) * 100, 0), 100)) = min(50.00, 75.00) = 50.00
+### Latency Component
+~~~
+m1 = (350ms - 200ms) / (500ms - 200ms)
 
-QoO_loss = min(max((1 - (2% - 1%) / (5% - 1%))
-* 100, 0), 100) = 75.00
+m2 = (375ms - 300ms) / (600ms - 300ms)
 
-QoO = min(QoO_latency, QoO_loss) = min(50.00, 75.00) = 50.00
+metrics = [clamp(0, m1, 1), clamp(0, m2, 1)]
+
+QoO_latency = find_min(metrics) * 100
+~~~
+
+
+### Packet Loss Component
+~~~
+m = (2% - 1%) / (5% - 1%)
+
+QoO_loss = clamp(0, m, 1) * 100
+~~~
+
+### Overall QoO
+~~~
+QoO = min(QoO_latency, QoO_loss)
+~~~
 
 In this example, the network scores 50% on the QoO assessment range between unacceptable and optimal for the given application
 when using the measured network and considering both latency and packet loss.
